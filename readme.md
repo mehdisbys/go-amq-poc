@@ -38,3 +38,5 @@ Run Consumer:
 ```
 go run reader.go
 ```
+
+Note : The consumer is set to not send ACK receipts, which means the messages will not be dequeued. 
