@@ -2,10 +2,12 @@ package main
 
 import stomp "github.com/go-stomp/stomp"
 import (
+	"encoding/json"
 	"fmt"
 	"time"
-	"encoding/json"
-	)
+	"strconv"
+	"os"
+)
 
 //Connect to ActiveMQ and produce messages
 func main() {
@@ -13,34 +15,39 @@ func main() {
 
 	if err != nil {
 		fmt.Println(err)
-		return;
+		return
 	}
 
-	Producer(conn)
+  messages:= 10000
+	startTime := time.Now()
+	Producer(messages,conn)
+	endTime := time.Since(startTime)
+
+	fmt.Printf("%d messages sent in %s \n", messages, endTime)
+
 }
 
-func Producer(conn *stomp.Conn) {
-	for {
-		time.Sleep(3 * time.Second)
+func Producer(messages int, conn *stomp.Conn) {
 
+	for i := 0; i < messages; i++ {
 		t := time.Now().Format(time.RFC850)
 
-		mapM := map[string]string{"msg": "Test message", "timestamp": t}
+		mapM := map[string]string{"msg": "Test message " + strconv.Itoa(i), "orderID": strconv.Itoa(i), "timestamp": t}
 
-    msg, errjson := json.Marshal(mapM)
+		msg, errjson := json.Marshal(mapM)
 
 		if errjson != nil {
 			fmt.Println(errjson)
-			return;
+			return
 		}
 
-		 err := conn.Send("/queue/test-1", "text/plain", msg) // body
+		//	fmt.Printf("Order received #%d \n", i)
 
-		 fmt.Println("Message " + string(msg)  + " sent at " + t)
-
+		err := conn.Send("/queue/orders-received", "text/plain", msg, stomp.SendOpt.Receipt)
+ 
 		if err != nil {
 			fmt.Println(err)
-			return;
+			os.Exit(1)
 		}
 	}
 }

@@ -1,7 +1,10 @@
 package main
 
 import stomp "github.com/go-stomp/stomp"
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 //Connect to ActiveMQ and listen for messages
 func main() {
@@ -11,7 +14,7 @@ func main() {
 		fmt.Println(err)
 	}
 
-	sub, err := conn.Subscribe("/queue/test-1", stomp.AckClient)
+	sub, err := conn.Subscribe("/queue/orders-received", stomp.AckAuto)
 
 	if err != nil {
 		fmt.Println("Error : ", err)
@@ -19,7 +22,33 @@ func main() {
 
 	for {
 		msg := <-sub.C
+
 		fmt.Println("Success : ", string(msg.Body))
+
+		var mapMsg map[string]string
+
+		errjson := json.Unmarshal(msg.Body, &mapMsg)
+
+		if errjson != nil {
+			fmt.Println(errjson)
+			return
+		}
+
+		mapM := map[string]string{"msg": "Order picked " + mapMsg["orderID"], "orderID": mapMsg["orderID"]}
+
+		picked, errjson2 := json.Marshal(mapM)
+
+		err := conn.Send("/queue/orders-picked", "text/plain", picked) // body
+
+		if errjson2 != nil {
+			fmt.Println(errjson)
+			return
+		}
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 	}
 
 	err = sub.Unsubscribe()
