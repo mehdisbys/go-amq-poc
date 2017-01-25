@@ -18,7 +18,7 @@ func main() {
 		return
 	}
 
-  messages:= 10000
+  messages:= 100000
 	startTime := time.Now()
 	Producer(messages,conn)
 	endTime := time.Since(startTime)
@@ -41,10 +41,8 @@ func Producer(messages int, conn *stomp.Conn) {
 			return
 		}
 
-		//	fmt.Printf("Order received #%d \n", i)
+		err := conn.Send("/queue/orders-received", "text/plain", msg, stomp.SendOpt.Receipt, stomp.SendOpt.Header("persistent", "true"))
 
-		err := conn.Send("/queue/orders-received", "text/plain", msg, stomp.SendOpt.Receipt)
- 
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
