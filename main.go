@@ -1,12 +1,13 @@
 package main
 
 import stomp "github.com/go-stomp/stomp"
+
 import (
 	"encoding/json"
 	"fmt"
 	"time"
-	"strconv"
-	"os"
+  "strconv"
+  "os"
 )
 
 //Connect to ActiveMQ and produce messages
@@ -18,7 +19,7 @@ func main() {
 		return
 	}
 
-  messages:= 100000
+  messages:= 10
 	startTime := time.Now()
 	Producer(messages,conn)
 	endTime := time.Since(startTime)
@@ -41,11 +42,12 @@ func Producer(messages int, conn *stomp.Conn) {
 			return
 		}
 
-		err := conn.Send("/queue/orders-received", "text/plain", msg, stomp.SendOpt.Receipt, stomp.SendOpt.Header("persistent", "true"))
+		err := conn.Send("/topic/orders-received", "text/plain", msg, stomp.SendOpt.Receipt, stomp.SendOpt.Header("persistent", "true"))
 
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
+
 	}
 }

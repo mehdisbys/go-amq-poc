@@ -1,6 +1,7 @@
 package main
 
 import stomp "github.com/go-stomp/stomp"
+
 import (
 	"encoding/json"
 	"fmt"
@@ -9,7 +10,11 @@ import (
 )
 
 func main() {
-	conn, err := stomp.Dial("tcp", "localhost:61613")
+	conn, err := stomp.Dial(
+		"tcp",
+		"localhost:61613",
+	  stomp.ConnOpt.Header("client-id", "alpha-tango"),
+	  stomp.ConnOpt.Header("retroactive", "true"))
 
 	if err != nil {
 		fmt.Println(err)
@@ -33,7 +38,11 @@ func main() {
 
 func Consumer(received chan string, conn *stomp.Conn) {
 
-	sub, err := conn.Subscribe("/queue/orders-received", stomp.AckAuto)
+	sub, err := conn.Subscribe(
+		"/topic/orders-received", stomp.AckAuto,
+		stomp.SubscribeOpt.Id("juliet-romeo"),
+   	stomp.SubscribeOpt.Header("activemq.retroactive", "true"),
+		stomp.SubscribeOpt.Header("activemq.subscriptionName", "interested-in-orders"))
 
 	if err != nil {
 		fmt.Println("Error : ", err)
@@ -68,7 +77,7 @@ func OrderPicked(received chan string, conn *stomp.Conn) {
 				return
 			}
 
-			err := conn.Send("/queue/orders-picked", "text/plain", picked, stomp.SendOpt.Receipt)
+			err := conn.Send("/topic/orders-picked", "text/plain", picked, stomp.SendOpt.Receipt)
 
 			if errjson != nil {
 				fmt.Println(err)
