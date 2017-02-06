@@ -10,11 +10,12 @@ import (
 )
 
 func main() {
+
 	conn, err := stomp.Dial(
 		"tcp",
 		"localhost:61613",
-	  stomp.ConnOpt.Header("client-id", "alpha-tango"),
-	  stomp.ConnOpt.Header("retroactive", "true"))
+		stomp.ConnOpt.Header("client-id", "alpha-tango"),
+		stomp.ConnOpt.Header("retroactive", "true"))
 
 	if err != nil {
 		fmt.Println(err)
@@ -41,7 +42,7 @@ func Consumer(received chan string, conn *stomp.Conn) {
 	sub, err := conn.Subscribe(
 		"/topic/orders-received", stomp.AckAuto,
 		stomp.SubscribeOpt.Id("juliet-romeo"),
-   	stomp.SubscribeOpt.Header("activemq.retroactive", "true"),
+		stomp.SubscribeOpt.Header("activemq.retroactive", "true"),
 		stomp.SubscribeOpt.Header("activemq.subscriptionName", "interested-in-orders"))
 
 	if err != nil {

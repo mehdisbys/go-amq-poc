@@ -6,11 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-  "strconv"
-  "os"
+	"strconv"
+	"os"
 )
 
-//Connect to ActiveMQ and produce messages
 func main() {
 	conn, err := stomp.Dial("tcp", "localhost:61613")
 
@@ -19,9 +18,9 @@ func main() {
 		return
 	}
 
-  messages:= 10
+	messages := 1000
 	startTime := time.Now()
-	Producer(messages,conn)
+	Producer(messages, conn)
 	endTime := time.Since(startTime)
 
 	fmt.Printf("%d messages sent in %s \n", messages, endTime)
